@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import PhosphorIcon from './PhosphorIcon';
-import { CaretDown, CaretUp } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, CaretRight } from '@phosphor-icons/react';
 
 const PHASE_STYLES = {
   'Tokyo I': { dot: 'bg-sakura', color: 'sakura' },
@@ -57,10 +57,10 @@ export default function Overview({ data, onSelectDay, bookingStatus, completedAc
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* Hero + Timeline */}
       <div className="relative">
-        <div className="relative h-64 overflow-hidden">
+        <div className="relative h-72 overflow-hidden">
           {heroImages.map((src, i) => (
             <img
               key={src}
@@ -75,7 +75,7 @@ export default function Overview({ data, onSelectDay, bookingStatus, completedAc
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
           {/* Timeline bar overlaid at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 px-5 pb-4">
+          <div className="absolute bottom-10 left-0 right-0 px-5">
             <div className="relative">
               <div className="h-1.5 bg-white/30 rounded-full overflow-hidden">
                 {tripStarted && (
@@ -122,69 +122,65 @@ export default function Overview({ data, onSelectDay, bookingStatus, completedAc
         </div>
       </div>
 
-      {/* Day cards (Schedule content) */}
-      <div className="px-4">
-        <div className="space-y-3">
-          {data.days.map(day => {
-            const style = PHASE_STYLES[day.phase];
-            const activityCount = day.activities.length;
-            const completedCount = completedActivities
-              ? day.activities.filter((_, i) => completedActivities[`${day.date}-${i}`]).length
-              : 0;
+      {/* Day cards overlapping the hero */}
+      <div className="px-4 -mt-6 relative z-10 space-y-3">
+        {data.days.map(day => {
+          const style = PHASE_STYLES[day.phase];
+          const activityCount = day.activities.length;
+          const completedCount = completedActivities
+            ? day.activities.filter((_, i) => completedActivities[`${day.date}-${i}`]).length
+            : 0;
 
-            return (
-              <button
-                key={day.date}
-                onClick={() => onSelectDay(day)}
-                className="w-full text-left bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all overflow-hidden"
-              >
-                <div className="flex">
-                  <div className="w-24 self-stretch shrink-0">
-                    {day.heroImage ? (
-                      <img src={day.heroImage} alt="" className="w-full h-full object-cover" loading="lazy" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                        <PhosphorIcon emoji={day.emoji} size={32} color={style.color} />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0 p-4 flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`w-2 h-2 rounded-full ${style.dot}`} />
-                        <span className="text-xs text-warm-gray">{day.label} · {day.weekday} {formatDate(day.date)}</span>
-                      </div>
-                      <h3 className="font-semibold text-ink text-sm">{day.title}</h3>
-                      <p className="text-xs text-warm-gray mt-0.5 truncate">{day.mainActivity}</p>
-                      <div className="flex items-center gap-3 mt-2">
-                        {day.bookable && (
-                          bookingStatus[day.date]
-                            ? <span className="text-[10px] bg-booked-bg text-booked px-2 py-0.5 rounded-full font-medium">Bokad</span>
-                            : <span className="text-[10px] bg-unbooked-bg text-unbooked px-2 py-0.5 rounded-full font-medium">Boka</span>
-                        )}
-                        {activityCount > 0 && (
-                          <span className="text-[10px] text-warm-gray">
-                            {completedCount}/{activityCount} klara
-                          </span>
-                        )}
-                        {completedCount === activityCount && activityCount > 0 && (
-                          <span className="text-[10px] text-bamboo font-medium">Klar!</span>
-                        )}
-                      </div>
+          return (
+            <button
+              key={day.date}
+              onClick={() => onSelectDay(day)}
+              className="w-full text-left bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all overflow-hidden"
+            >
+              <div className="flex">
+                <div className="w-24 self-stretch shrink-0">
+                  {day.heroImage ? (
+                    <img src={day.heroImage} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                      <PhosphorIcon emoji={day.emoji} size={32} color={style.color} />
                     </div>
-                    <svg className="w-4 h-4 text-gray-300 mt-2 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
+                  )}
                 </div>
-              </button>
-            );
-          })}
-        </div>
+                <div className="flex-1 min-w-0 p-4 flex items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`w-2 h-2 rounded-full ${style.dot}`} />
+                      <span className="text-xs text-warm-gray">{day.label} · {day.weekday} {formatDate(day.date)}</span>
+                    </div>
+                    <h3 className="font-semibold text-ink text-sm">{day.title}</h3>
+                    <p className="text-xs text-warm-gray mt-0.5 truncate">{day.mainActivity}</p>
+                    <div className="flex items-center gap-3 mt-2">
+                      {day.bookable && (
+                        bookingStatus[day.date]
+                          ? <span className="text-[10px] bg-booked-bg text-booked px-2 py-0.5 rounded-full font-medium">Bokad</span>
+                          : <span className="text-[10px] bg-unbooked-bg text-unbooked px-2 py-0.5 rounded-full font-medium">Boka</span>
+                      )}
+                      {activityCount > 0 && (
+                        <span className="text-[10px] text-warm-gray">
+                          {completedCount}/{activityCount} klara
+                        </span>
+                      )}
+                      {completedCount === activityCount && activityCount > 0 && (
+                        <span className="text-[10px] text-bamboo font-medium">Klar!</span>
+                      )}
+                    </div>
+                  </div>
+                  <CaretRight size={16} weight="bold" color="#D1D5DB" className="mt-2 shrink-0" />
+                </div>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Collapsible timeline */}
-      <div className="px-4 pb-6">
+      <div className="px-4 pt-6 pb-6">
         <button
           onClick={() => setTimelineOpen(!timelineOpen)}
           className="w-full flex items-center justify-between mb-3"

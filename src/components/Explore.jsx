@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import PhosphorIcon from './PhosphorIcon';
-import { MapPin, Clock, Train, ArrowLeft, CheckCircle, Star, CaretRight } from '@phosphor-icons/react';
+import { MapPin, Clock, Train, ArrowLeft, CheckCircle, CaretRight, NavigationArrow } from '@phosphor-icons/react';
+
+function mapsUrl(place) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place + ' Japan')}`;
+}
 
 export default function Explore({ data }) {
   const [activeCategory, setActiveCategory] = useState(0);
@@ -161,19 +165,8 @@ export default function Explore({ data }) {
 function PlaceDetail({ place, onClose }) {
   return (
     <div className="pb-6">
-      {/* Back button */}
-      <div className="px-4 py-4">
-        <button
-          onClick={onClose}
-          className="flex items-center gap-1 text-sm text-ocean hover:underline"
-        >
-          <ArrowLeft size={16} />
-          Tillbaka
-        </button>
-      </div>
-
-      {/* Hero image */}
-      {place.image && (
+      {/* Hero image with back button */}
+      {place.image ? (
         <div className="relative h-56 overflow-hidden">
           <img
             src={place.image}
@@ -181,6 +174,13 @@ function PlaceDetail({ place, onClose }) {
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+          {/* Back button circle */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 left-4 w-9 h-9 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/50 transition-colors"
+          >
+            <ArrowLeft size={18} weight="bold" color="white" />
+          </button>
           <div className="absolute bottom-4 left-4 right-4">
             <h2 className="text-xl font-bold text-white drop-shadow-md">{place.name}</h2>
             <div className="flex items-center gap-3 mt-1">
@@ -197,16 +197,25 @@ function PlaceDetail({ place, onClose }) {
             </div>
           </div>
           {place.kidFriendly && (
-            <span className="absolute top-3 right-3 text-xs bg-bamboo-light text-bamboo px-2 py-0.5 rounded-full font-medium">
+            <span className="absolute top-4 right-4 text-xs bg-bamboo-light text-bamboo px-2 py-0.5 rounded-full font-medium">
               Barnvänligt
             </span>
           )}
+        </div>
+      ) : (
+        <div className="px-4 pt-4">
+          <button
+            onClick={onClose}
+            className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors mb-4"
+          >
+            <ArrowLeft size={18} weight="bold" color="#2D2D2D" />
+          </button>
         </div>
       )}
 
       <div className="px-4">
         {/* Description card */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 -mt-4 relative z-10 mb-3">
+        <div className={`bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-3 ${place.image ? '-mt-4 relative z-10' : ''}`}>
           {!place.image && (
             <div className="mb-3">
               <h2 className="text-xl font-bold text-ink">{place.name}</h2>
@@ -227,6 +236,16 @@ function PlaceDetail({ place, onClose }) {
           <p className="text-sm text-ink/80 leading-relaxed">
             {place.longDescription || place.description}
           </p>
+          {/* Maps link */}
+          <a
+            href={mapsUrl(place.name + ' ' + place.area)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 mt-3 text-xs text-ocean font-medium hover:underline"
+          >
+            <NavigationArrow size={13} weight="duotone" />
+            Visa på Google Maps
+          </a>
         </div>
 
         {/* Transport info */}
@@ -236,7 +255,15 @@ function PlaceDetail({ place, onClose }) {
               <Train size={16} weight="duotone" color="#0077B6" />
               <h4 className="text-xs font-semibold text-ink uppercase tracking-wider">Närmaste station</h4>
             </div>
-            <p className="text-sm text-warm-gray ml-6">{place.nearestStation}</p>
+            <a
+              href={mapsUrl(place.nearestStation)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-ocean ml-6 hover:underline flex items-center gap-1"
+            >
+              {place.nearestStation}
+              <NavigationArrow size={11} weight="duotone" />
+            </a>
           </div>
         )}
 
