@@ -1,7 +1,14 @@
 import { useMemo, useState, useEffect } from 'react';
 import PhosphorIcon from './PhosphorIcon';
+import { CaretDown, CaretUp } from '@phosphor-icons/react';
 
-export default function Overview({ data, onSelectDay, bookingStatus }) {
+const PHASE_STYLES = {
+  'Tokyo I': { dot: 'bg-sakura', color: 'sakura' },
+  'Okinawa': { dot: 'bg-ocean', color: 'ocean' },
+  'Tokyo II': { dot: 'bg-fuji', color: 'fuji' },
+};
+
+export default function Overview({ data, onSelectDay, bookingStatus, completedActivities }) {
   const today = new Date();
   const startDate = new Date(data.startDate);
   const endDate = new Date(data.endDate);
@@ -11,6 +18,7 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
   [data.days]);
 
   const [heroIndex, setHeroIndex] = useState(0);
+  const [timelineOpen, setTimelineOpen] = useState(false);
 
   useEffect(() => {
     if (heroImages.length <= 1) return;
@@ -48,15 +56,10 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
     }));
   }, []);
 
-  const bookedDays = data.days.filter(d => d.bookable && bookingStatus[d.date]).length;
-  const bookableDays = data.days.filter(d => d.bookable).length;
-  const upcomingBookable = data.days.filter(d => d.bookable);
-
   return (
     <div className="space-y-6">
       {/* Hero + Timeline */}
       <div className="relative">
-        {/* Hero image */}
         <div className="relative h-64 overflow-hidden">
           {heroImages.map((src, i) => (
             <img
@@ -73,7 +76,6 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
 
           {/* Timeline bar overlaid at bottom */}
           <div className="absolute bottom-0 left-0 right-0 px-5 pb-4">
-            {/* Track */}
             <div className="relative">
               <div className="h-1.5 bg-white/30 rounded-full overflow-hidden">
                 {tripStarted && (
@@ -83,8 +85,6 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
                   />
                 )}
               </div>
-
-              {/* Phase dots */}
               {phaseBoundaries.map((phase, i) => (
                 <div
                   key={i}
@@ -92,13 +92,10 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
                   style={{ left: `${phase.startPct}%`, marginLeft: '-5px' }}
                 />
               ))}
-              {/* End dot */}
               <div
                 className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white rounded-full border-2 border-white/50 shadow-sm"
                 style={{ left: '100%', marginLeft: '-5px' }}
               />
-
-              {/* Current position indicator */}
               {tripStarted && !tripEnded && (
                 <div
                   className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-ocean rounded-full border-2 border-white shadow-md"
@@ -106,8 +103,6 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
                 />
               )}
             </div>
-
-            {/* Phase labels */}
             <div className="flex mt-2">
               {phaseBoundaries.map((phase, i) => {
                 const width = phase.endPct - phase.startPct;
@@ -127,34 +122,60 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
         </div>
       </div>
 
-      {/* Bookable activities */}
+      {/* Day cards (Schedule content) */}
       <div className="px-4">
-        <h2 className="text-sm font-semibold text-warm-gray uppercase tracking-wider mb-3">Att boka</h2>
-        <div className="space-y-2">
-          {upcomingBookable.map(day => {
-            const isBooked = bookingStatus[day.date];
-            const phaseColor = day.phase === 'Tokyo I' ? 'sakura' : day.phase === 'Okinawa' ? 'ocean' : 'fuji';
+        <div className="space-y-3">
+          {data.days.map(day => {
+            const style = PHASE_STYLES[day.phase];
+            const activityCount = day.activities.length;
+            const completedCount = completedActivities
+              ? day.activities.filter((_, i) => completedActivities[`${day.date}-${i}`]).length
+              : 0;
+
             return (
               <button
                 key={day.date}
                 onClick={() => onSelectDay(day)}
-                className="w-full text-left bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-ocean/30 transition-colors"
+                className="w-full text-left bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all overflow-hidden"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <PhosphorIcon emoji={day.emoji} size={28} color={phaseColor} />
-                    <div>
-                      <p className="font-semibold text-ink text-sm">{day.title}</p>
-                      <p className="text-xs text-warm-gray">{day.weekday} {formatDate(day.date)}</p>
-                    </div>
+                <div className="flex">
+                  <div className="w-24 self-stretch shrink-0">
+                    {day.heroImage ? (
+                      <img src={day.heroImage} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                        <PhosphorIcon emoji={day.emoji} size={32} color={style.color} />
+                      </div>
+                    )}
                   </div>
-                  {isBooked ? (
-                    <span className="text-xs bg-booked-bg text-booked px-2 py-1 rounded-full font-medium">
-                      Bokad
-                    </span>
-                  ) : (
-                    <span className="text-xs bg-unbooked-bg text-unbooked px-2 py-1 rounded-full font-medium">Boka</span>
-                  )}
+                  <div className="flex-1 min-w-0 p-4 flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`w-2 h-2 rounded-full ${style.dot}`} />
+                        <span className="text-xs text-warm-gray">{day.label} · {day.weekday} {formatDate(day.date)}</span>
+                      </div>
+                      <h3 className="font-semibold text-ink text-sm">{day.title}</h3>
+                      <p className="text-xs text-warm-gray mt-0.5 truncate">{day.mainActivity}</p>
+                      <div className="flex items-center gap-3 mt-2">
+                        {day.bookable && (
+                          bookingStatus[day.date]
+                            ? <span className="text-[10px] bg-booked-bg text-booked px-2 py-0.5 rounded-full font-medium">Bokad</span>
+                            : <span className="text-[10px] bg-unbooked-bg text-unbooked px-2 py-0.5 rounded-full font-medium">Boka</span>
+                        )}
+                        {activityCount > 0 && (
+                          <span className="text-[10px] text-warm-gray">
+                            {completedCount}/{activityCount} klara
+                          </span>
+                        )}
+                        {completedCount === activityCount && activityCount > 0 && (
+                          <span className="text-[10px] text-bamboo font-medium">Klar!</span>
+                        )}
+                      </div>
+                    </div>
+                    <svg className="w-4 h-4 text-gray-300 mt-2 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </div>
               </button>
             );
@@ -162,33 +183,44 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
         </div>
       </div>
 
-      {/* Quick timeline */}
+      {/* Collapsible timeline */}
       <div className="px-4 pb-6">
-        <h2 className="text-sm font-semibold text-warm-gray uppercase tracking-wider mb-3">Tidslinje</h2>
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-          <div className="space-y-1">
-            {data.days.map((day, i) => {
-              const phaseColor = day.phase === 'Tokyo I' ? 'bg-sakura' : day.phase === 'Okinawa' ? 'bg-ocean' : 'bg-fuji';
-              return (
-                <button
-                  key={day.date}
-                  onClick={() => onSelectDay(day)}
-                  className="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
-                >
-                  <div className={`w-2 h-2 rounded-full ${phaseColor} shrink-0`} />
-                  <span className="text-xs text-warm-gray w-10 shrink-0">{day.weekday.slice(0, 3)}</span>
-                  <PhosphorIcon emoji={day.emoji} size={14} color="warm-gray" className="shrink-0" />
-                  <span className="text-xs text-ink truncate">{day.title}</span>
-                  {day.bookable && (
-                    bookingStatus[day.date]
-                      ? <span className="text-[10px] bg-booked-bg text-booked px-1.5 py-0.5 rounded-full ml-auto shrink-0">Bokad</span>
-                      : <span className="text-[10px] bg-unbooked-bg text-unbooked px-1.5 py-0.5 rounded-full ml-auto shrink-0">Boka</span>
-                  )}
-                </button>
-              );
-            })}
+        <button
+          onClick={() => setTimelineOpen(!timelineOpen)}
+          className="w-full flex items-center justify-between mb-3"
+        >
+          <h2 className="text-sm font-semibold text-warm-gray uppercase tracking-wider">Tidslinje</h2>
+          {timelineOpen
+            ? <CaretUp size={16} weight="bold" color="#9E9E9E" />
+            : <CaretDown size={16} weight="bold" color="#9E9E9E" />
+          }
+        </button>
+        {timelineOpen && (
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div className="space-y-1">
+              {data.days.map((day) => {
+                const phaseColor = day.phase === 'Tokyo I' ? 'bg-sakura' : day.phase === 'Okinawa' ? 'bg-ocean' : 'bg-fuji';
+                return (
+                  <button
+                    key={day.date}
+                    onClick={() => onSelectDay(day)}
+                    className="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <div className={`w-2 h-2 rounded-full ${phaseColor} shrink-0`} />
+                    <span className="text-xs text-warm-gray w-10 shrink-0">{day.weekday.slice(0, 3)}</span>
+                    <PhosphorIcon emoji={day.emoji} size={14} color="warm-gray" className="shrink-0" />
+                    <span className="text-xs text-ink truncate">{day.title}</span>
+                    {day.bookable && (
+                      bookingStatus[day.date]
+                        ? <span className="text-[10px] bg-booked-bg text-booked px-1.5 py-0.5 rounded-full ml-auto shrink-0">Bokad</span>
+                        : <span className="text-[10px] bg-unbooked-bg text-unbooked px-1.5 py-0.5 rounded-full ml-auto shrink-0">Boka</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

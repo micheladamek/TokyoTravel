@@ -1,8 +1,8 @@
-import { Globe, CalendarDots, Compass } from '@phosphor-icons/react';
+import { Globe, CalendarCheck, Compass } from '@phosphor-icons/react';
 
 const ICON_MAP = {
   overview: Globe,
-  schedule: CalendarDots,
+  bookings: CalendarCheck,
   explore: Compass,
 };
 

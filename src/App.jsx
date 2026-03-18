@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { tripData } from './data/tripData';
 import Overview from './components/Overview';
-import Schedule from './components/Schedule';
+import Bookings from './components/Bookings';
 import DayDetail from './components/DayDetail';
 import Explore from './components/Explore';
 import Navigation from './components/Navigation';
@@ -9,7 +9,7 @@ import './index.css';
 
 const TABS = [
   { id: 'overview', label: 'Översikt', icon: '🗾' },
-  { id: 'schedule', label: 'Schema', icon: '📅' },
+  { id: 'bookings', label: 'Boka', icon: '📅' },
   { id: 'explore', label: 'Utforska', icon: '🧭' },
 ];
 
@@ -100,13 +100,20 @@ function App() {
           />
         ) : (
           <>
-            {activeTab === 'overview' && <Overview data={tripData} onSelectDay={(day) => setSelectedDay(day)} bookingStatus={bookingStatus} />}
-            {activeTab === 'schedule' && (
-              <Schedule
+            {activeTab === 'overview' && (
+              <Overview
+                data={tripData}
+                onSelectDay={(day) => setSelectedDay(day)}
+                bookingStatus={bookingStatus}
+                completedActivities={completedActivities}
+              />
+            )}
+            {activeTab === 'bookings' && (
+              <Bookings
                 days={tripData.days}
                 onSelectDay={(day) => setSelectedDay(day)}
-                completedActivities={completedActivities}
                 bookingStatus={bookingStatus}
+                toggleBooking={toggleBooking}
               />
             )}
             {activeTab === 'explore' && <Explore data={tripData.explore} />}
