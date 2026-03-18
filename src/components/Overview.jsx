@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
+import PhosphorIcon from './PhosphorIcon';
 
 export default function Overview({ data, onSelectDay, bookingStatus }) {
   const today = new Date();
@@ -40,10 +41,10 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
       startPct: ((p.start - startDate) / totalMs) * 100,
       endPct: ((p.end - startDate) / totalMs) * 100,
       dates: p.name === 'Okinawa'
-        ? '23 apr–3 maj'
+        ? '23 apr – 6 maj'
         : p.start.getDate() === 10
           ? '10–22 apr'
-          : '3–6 maj',
+          : '3 –6 maj',
     }));
   }, []);
 
@@ -70,12 +71,6 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
           ))}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-          {/* Trip info overlay */}
-          <div className="absolute bottom-20 left-4 right-4">
-            <h2 className="text-2xl font-bold text-white drop-shadow-md">Japan 2026</h2>
-            <p className="text-white/80 text-sm mt-0.5">10 apr – 6 maj · {data.days.length} dagar · {bookedDays}/{bookableDays} bokade</p>
-          </div>
-
           {/* Timeline bar overlaid at bottom */}
           <div className="absolute bottom-0 left-0 right-0 px-5 pb-4">
             {/* Track */}
@@ -83,7 +78,7 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
               <div className="h-1.5 bg-white/30 rounded-full overflow-hidden">
                 {tripStarted && (
                   <div
-                    className="h-full bg-ocean rounded-full transition-all duration-500"
+                    className="h-full bg-white rounded-full transition-all duration-500"
                     style={{ width: `${tripEnded ? 100 : progressPercent}%` }}
                   />
                 )}
@@ -93,13 +88,13 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
               {phaseBoundaries.map((phase, i) => (
                 <div
                   key={i}
-                  className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white rounded-full border-2 border-ocean shadow-sm"
+                  className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white rounded-full border-2 border-white/50 shadow-sm"
                   style={{ left: `${phase.startPct}%`, marginLeft: '-5px' }}
                 />
               ))}
               {/* End dot */}
               <div
-                className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white rounded-full border-2 border-ocean shadow-sm"
+                className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white rounded-full border-2 border-white/50 shadow-sm"
                 style={{ left: '100%', marginLeft: '-5px' }}
               />
 
@@ -138,6 +133,7 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
         <div className="space-y-2">
           {upcomingBookable.map(day => {
             const isBooked = bookingStatus[day.date];
+            const phaseColor = day.phase === 'Tokyo I' ? 'sakura' : day.phase === 'Okinawa' ? 'ocean' : 'fuji';
             return (
               <button
                 key={day.date}
@@ -146,7 +142,7 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">{day.emoji}</span>
+                    <PhosphorIcon emoji={day.emoji} size={28} color={phaseColor} />
                     <div>
                       <p className="font-semibold text-ink text-sm">{day.title}</p>
                       <p className="text-xs text-warm-gray">{day.weekday} {formatDate(day.date)}</p>
@@ -181,7 +177,8 @@ export default function Overview({ data, onSelectDay, bookingStatus }) {
                 >
                   <div className={`w-2 h-2 rounded-full ${phaseColor} shrink-0`} />
                   <span className="text-xs text-warm-gray w-10 shrink-0">{day.weekday.slice(0, 3)}</span>
-                  <span className="text-xs text-ink truncate">{day.emoji} {day.title}</span>
+                  <PhosphorIcon emoji={day.emoji} size={14} color="warm-gray" className="shrink-0" />
+                  <span className="text-xs text-ink truncate">{day.title}</span>
                   {day.bookable && (
                     bookingStatus[day.date]
                       ? <span className="text-[10px] bg-booked-bg text-booked px-1.5 py-0.5 rounded-full ml-auto shrink-0">Bokad</span>

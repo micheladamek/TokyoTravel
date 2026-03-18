@@ -83,17 +83,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-paper">
-      {(activeTab !== 'overview' || selectedDay) && (
-        <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
-          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-            <h1 className="text-lg font-semibold text-ink flex items-center gap-2">
-              🗾 <span>Japan 2026</span>
-            </h1>
-            <span className="text-xs text-warm-gray">10 apr – 6 maj</span>
-          </div>
-        </header>
-      )}
-
       <main className="max-w-2xl mx-auto pb-24">
         {selectedDay ? (
           <DayDetail

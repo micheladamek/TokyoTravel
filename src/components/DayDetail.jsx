@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import PhosphorIcon, { TransportPhosphorIcon } from './PhosphorIcon';
 
 export default function DayDetail({
   day,
@@ -33,10 +34,10 @@ export default function DayDetail({
   const phaseColor = day.phase === 'Tokyo I' ? 'sakura' : day.phase === 'Okinawa' ? 'ocean' : 'fuji';
 
   const sections = [
-    { id: 'activities', label: 'Aktiviteter', icon: '📋' },
-    { id: 'transport', label: 'Resväg', icon: '🚃' },
-    { id: 'dining', label: 'Mat', icon: '🍜' },
-    { id: 'notes', label: 'Anteckningar', icon: '📝' },
+    { id: 'activities', label: 'Aktiviteter', emoji: '📋' },
+    { id: 'transport', label: 'Resväg', emoji: '🚃' },
+    { id: 'dining', label: 'Mat', emoji: '🍜' },
+    { id: 'notes', label: 'Anteckningar', emoji: '📝' },
   ];
 
   return (
@@ -83,7 +84,7 @@ export default function DayDetail({
         <div className="p-5">
           {!day.heroImage && (
             <div className="flex items-start gap-3 mb-3">
-              <span className="text-4xl">{day.emoji}</span>
+              <PhosphorIcon emoji={day.emoji} size={40} color={phaseColor} />
               <div>
                 <p className="text-xs text-warm-gray">{day.label} · {day.weekday} {formatDate(day.date)}</p>
                 <h2 className="text-xl font-bold text-ink mt-0.5">{day.title}</h2>
@@ -115,13 +116,18 @@ export default function DayDetail({
           <button
             key={s.id}
             onClick={() => setActiveSection(s.id)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
+            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
               activeSection === s.id
                 ? `bg-${phaseColor} text-white`
                 : 'bg-white text-warm-gray border border-gray-200'
             }`}
           >
-            {s.icon} {s.label}
+            <PhosphorIcon
+              emoji={s.emoji}
+              size={14}
+              color={activeSection === s.id ? 'white' : 'warm-gray'}
+            />
+            {s.label}
           </button>
         ))}
       </div>
@@ -156,7 +162,7 @@ export default function DayDetail({
                   </button>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span>{activity.icon}</span>
+                      <PhosphorIcon emoji={activity.icon} size={18} color={done ? 'warm-gray' : phaseColor} />
                       <span className={`font-medium text-sm ${done ? 'line-through text-warm-gray' : 'text-ink'}`}>
                         {activity.name}
                       </span>
@@ -180,7 +186,7 @@ export default function DayDetail({
             day.transport.map((t, i) => (
               <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                 <div className="flex items-center gap-2 mb-2">
-                  <TransportIcon method={t.method} />
+                  <TransportPhosphorIcon method={t.method} size={20} />
                   <span className="text-xs font-medium text-ocean">{t.method}</span>
                   {t.duration && (
                     <span className="text-xs text-warm-gray ml-auto">{t.duration}</span>
@@ -219,7 +225,7 @@ export default function DayDetail({
                     <p className="text-xs text-ocean mt-0.5">{d.cuisine} · {d.area}</p>
                     {d.note && <p className="text-xs text-warm-gray mt-1">{d.note}</p>}
                   </div>
-                  <span className="text-xl">🍽️</span>
+                  <PhosphorIcon emoji="🍽️" size={24} color="warm-gray" />
                 </div>
               </div>
             ))
@@ -275,23 +281,6 @@ export default function DayDetail({
       )}
     </div>
   );
-}
-
-function TransportIcon({ method }) {
-  const icons = {
-    'Tåg': '🚃',
-    'Tunnelbana': '🚇',
-    'Buss': '🚌',
-    'Promenad': '🚶',
-    'Bil': '🚗',
-    'Buss/Taxi': '🚕',
-    'Yurikamome': '🚝',
-    'Disney Resort Line': '🚝',
-    'Enoden': '🚃',
-    'Buss/Promenad': '🚶',
-    'Tåg/Buss': '🚃',
-  };
-  return <span className="text-lg">{icons[method] || '🚃'}</span>;
 }
 
 function formatDate(dateStr) {

@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import PhosphorIcon from './PhosphorIcon';
 
 const PHASE_STYLES = {
-  'Tokyo I': { bg: 'bg-sakura-light', border: 'border-sakura', dot: 'bg-sakura', label: 'Tokyo I' },
-  'Okinawa': { bg: 'bg-ocean-light', border: 'border-ocean', dot: 'bg-ocean', label: 'Okinawa' },
-  'Tokyo II': { bg: 'bg-fuji-light', border: 'border-fuji', dot: 'bg-fuji', label: 'Tokyo II' },
+  'Tokyo I': { bg: 'bg-sakura-light', border: 'border-sakura', dot: 'bg-sakura', label: 'Tokyo I', color: 'sakura' },
+  'Okinawa': { bg: 'bg-ocean-light', border: 'border-ocean', dot: 'bg-ocean', label: 'Okinawa', color: 'ocean' },
+  'Tokyo II': { bg: 'bg-fuji-light', border: 'border-fuji', dot: 'bg-fuji', label: 'Tokyo II', color: 'fuji' },
 };
 
 export default function Schedule({ days, onSelectDay, completedActivities, bookingStatus }) {
@@ -39,13 +40,16 @@ export default function Schedule({ days, onSelectDay, completedActivities, booki
               className={`w-full text-left bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all overflow-hidden`}
             >
               <div className="flex">
-                {day.heroImage && (
-                  <div className="w-24 self-stretch shrink-0">
+                <div className="w-24 self-stretch shrink-0">
+                  {day.heroImage ? (
                     <img src={day.heroImage} alt="" className="w-full h-full object-cover" loading="lazy" />
-                  </div>
-                )}
-                <div className={`flex-1 min-w-0 p-4 flex items-start gap-3`}>
-                  {!day.heroImage && <div className="text-3xl pt-0.5 shrink-0">{day.emoji}</div>}
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                      <PhosphorIcon emoji={day.emoji} size={32} color={style.color} />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 p-4 flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className={`w-2 h-2 rounded-full ${style.dot}`} />

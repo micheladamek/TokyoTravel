@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PhosphorIcon from './PhosphorIcon';
 
 export default function Explore({ data }) {
   const [activeCategory, setActiveCategory] = useState(0);
@@ -19,13 +20,14 @@ export default function Explore({ data }) {
           <button
             key={cat.category}
             onClick={() => setActiveCategory(i)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
+            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
               activeCategory === i
                 ? 'bg-ocean text-white'
                 : 'bg-white text-warm-gray border border-gray-200 hover:border-ocean/30'
             }`}
           >
-            <span>{cat.icon}</span> {cat.category}
+            <PhosphorIcon emoji={cat.icon} size={14} color={activeCategory === i ? 'white' : 'warm-gray'} />
+            {cat.category}
           </button>
         ))}
       </div>
