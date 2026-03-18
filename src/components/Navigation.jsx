@@ -1,9 +1,10 @@
-import { Globe, CalendarCheck, Compass } from '@phosphor-icons/react';
+import { Globe, CalendarCheck, Compass, Camera } from '@phosphor-icons/react';
 
 const ICON_MAP = {
   overview: Globe,
   bookings: CalendarCheck,
   explore: Compass,
+  photos: Camera,
 };
 
 export default function Navigation({ tabs, activeTab, onTabChange }) {

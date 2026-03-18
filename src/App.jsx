@@ -4,6 +4,7 @@ import Overview from './components/Overview';
 import Bookings from './components/Bookings';
 import DayDetail from './components/DayDetail';
 import Explore from './components/Explore';
+import PhotoGallery from './components/PhotoGallery';
 import Navigation from './components/Navigation';
 import './index.css';
 
@@ -11,6 +12,7 @@ const TABS = [
   { id: 'overview', label: 'Översikt', icon: '🗾' },
   { id: 'bookings', label: 'Boka', icon: '📅' },
   { id: 'explore', label: 'Utforska', icon: '🧭' },
+  { id: 'photos', label: 'Foton', icon: '📷' },
 ];
 
 function App() {
@@ -37,6 +39,10 @@ function App() {
     });
     return initial;
   });
+  const [customBookings, setCustomBookings] = useState(() => {
+    const saved = localStorage.getItem('tokyotravel-custom-bookings');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
     localStorage.setItem('tokyotravel-completed', JSON.stringify(completedActivities));
@@ -53,6 +59,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('tokyotravel-bookings', JSON.stringify(bookingStatus));
   }, [bookingStatus]);
+
+  useEffect(() => {
+    localStorage.setItem('tokyotravel-custom-bookings', JSON.stringify(customBookings));
+  }, [customBookings]);
 
   const toggleBooking = (dayDate) => {
     setBookingStatus(prev => ({ ...prev, [dayDate]: !prev[dayDate] }));
@@ -79,6 +89,20 @@ function App() {
       ...prev,
       [dayDate]: (prev[dayDate] || []).filter((_, i) => i !== index),
     }));
+  };
+
+  const addCustomBooking = (booking) => {
+    setCustomBookings(prev => [...prev, booking]);
+  };
+
+  const removeCustomBooking = (index) => {
+    setCustomBookings(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const toggleCustomBooking = (index) => {
+    setCustomBookings(prev => prev.map((b, i) =>
+      i === index ? { ...b, booked: !b.booked } : b
+    ));
   };
 
   return (
@@ -114,9 +138,20 @@ function App() {
                 onSelectDay={(day) => setSelectedDay(day)}
                 bookingStatus={bookingStatus}
                 toggleBooking={toggleBooking}
+                customBookings={customBookings}
+                addCustomBooking={addCustomBooking}
+                removeCustomBooking={removeCustomBooking}
+                toggleCustomBooking={toggleCustomBooking}
               />
             )}
             {activeTab === 'explore' && <Explore data={tripData.explore} />}
+            {activeTab === 'photos' && (
+              <PhotoGallery
+                days={tripData.days}
+                photos={photos}
+                onSelectDay={(day) => setSelectedDay(day)}
+              />
+            )}
           </>
         )}
       </main>

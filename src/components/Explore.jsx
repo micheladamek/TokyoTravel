@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PhosphorIcon from './PhosphorIcon';
-import { MapPin, Clock, Train, ArrowLeft, CheckCircle } from '@phosphor-icons/react';
+import { MapPin, Clock, Train, ArrowLeft, CheckCircle, Star, CaretRight } from '@phosphor-icons/react';
 
 export default function Explore({ data }) {
   const [activeCategory, setActiveCategory] = useState(0);
@@ -16,49 +16,99 @@ export default function Explore({ data }) {
     return <PlaceDetail place={selectedPlace} onClose={() => setSelectedPlace(null)} />;
   }
 
+  // Featured place (first with image in current category)
+  const featured = filteredPlaces[0];
+  const rest = filteredPlaces.slice(1);
+
   return (
-    <div className="px-4 py-6">
+    <div className="pb-6">
       {/* Category tabs */}
-      <div className="flex gap-2 mb-4 overflow-x-auto hide-scrollbar">
-        {data.map((cat, i) => (
+      <div className="px-4 pt-6">
+        <div className="flex gap-2 mb-4 overflow-x-auto hide-scrollbar">
+          {data.map((cat, i) => (
+            <button
+              key={cat.category}
+              onClick={() => { setActiveCategory(i); setFilter('all'); }}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                activeCategory === i
+                  ? 'bg-ocean text-white'
+                  : 'bg-white text-warm-gray border border-gray-200 hover:border-ocean/30'
+              }`}
+            >
+              <PhosphorIcon emoji={cat.icon} size={14} color={activeCategory === i ? 'white' : 'warm-gray'} />
+              {cat.category}
+            </button>
+          ))}
+        </div>
+
+        {/* Kid filter */}
+        <div className="flex gap-2 mb-5">
           <button
-            key={cat.category}
-            onClick={() => { setActiveCategory(i); setFilter('all'); }}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
-              activeCategory === i
-                ? 'bg-ocean text-white'
-                : 'bg-white text-warm-gray border border-gray-200 hover:border-ocean/30'
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1 rounded-full text-xs transition-colors ${
+              filter === 'all' ? 'bg-bamboo text-white' : 'bg-gray-100 text-warm-gray'
             }`}
           >
-            <PhosphorIcon emoji={cat.icon} size={14} color={activeCategory === i ? 'white' : 'warm-gray'} />
-            {cat.category}
+            Alla
           </button>
-        ))}
+          <button
+            onClick={() => setFilter('kids')}
+            className={`px-3 py-1 rounded-full text-xs transition-colors ${
+              filter === 'kids' ? 'bg-bamboo text-white' : 'bg-gray-100 text-warm-gray'
+            }`}
+          >
+            Barnvänligt
+          </button>
+        </div>
       </div>
 
-      {/* Kid filter */}
-      <div className="flex gap-2 mb-5">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-3 py-1 rounded-full text-xs transition-colors ${
-            filter === 'all' ? 'bg-bamboo text-white' : 'bg-gray-100 text-warm-gray'
-          }`}
-        >
-          Alla
-        </button>
-        <button
-          onClick={() => setFilter('kids')}
-          className={`px-3 py-1 rounded-full text-xs transition-colors ${
-            filter === 'kids' ? 'bg-bamboo text-white' : 'bg-gray-100 text-warm-gray'
-          }`}
-        >
-          Barnvänligt
-        </button>
-      </div>
+      {/* Featured card (large) */}
+      {featured && (
+        <div className="px-4 mb-4">
+          <button
+            onClick={() => setSelectedPlace(featured)}
+            className="w-full text-left bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all overflow-hidden"
+          >
+            {featured.image && (
+              <div className="relative h-44 overflow-hidden">
+                <img src={featured.image} alt="" className="w-full h-full object-cover" loading="eager" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                <div className="absolute bottom-3 left-4 right-4">
+                  <h3 className="font-bold text-white text-base drop-shadow-md">{featured.name}</h3>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex items-center gap-1">
+                      <MapPin size={11} weight="fill" color="white" />
+                      <span className="text-white/80 text-xs">{featured.area}</span>
+                    </div>
+                    {featured.timeNeeded && (
+                      <div className="flex items-center gap-1">
+                        <Clock size={11} weight="fill" color="white" />
+                        <span className="text-white/80 text-xs">{featured.timeNeeded}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {featured.kidFriendly && (
+                  <span className="absolute top-3 right-3 text-[10px] bg-bamboo-light text-bamboo px-1.5 py-0.5 rounded-full font-medium">
+                    Barnvänligt
+                  </span>
+                )}
+              </div>
+            )}
+            <div className="p-4">
+              <p className="text-sm text-warm-gray line-clamp-2">{featured.description}</p>
+              <div className="flex items-center gap-1 mt-2 text-ocean">
+                <span className="text-xs font-medium">Läs mer</span>
+                <CaretRight size={12} weight="bold" />
+              </div>
+            </div>
+          </button>
+        </div>
+      )}
 
-      {/* Places grid */}
-      <div className="space-y-3">
-        {filteredPlaces.map(place => (
+      {/* Rest of places */}
+      <div className="px-4 space-y-3">
+        {rest.map(place => (
           <button
             key={place.name}
             onClick={() => setSelectedPlace(place)}
@@ -98,9 +148,7 @@ export default function Explore({ data }) {
                 )}
               </div>
               <div className="flex items-center pr-3">
-                <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                <CaretRight size={16} weight="bold" color="#D1D5DB" />
               </div>
             </div>
           </button>
@@ -112,50 +160,53 @@ export default function Explore({ data }) {
 
 function PlaceDetail({ place, onClose }) {
   return (
-    <div className="px-4 py-4">
+    <div className="pb-6">
       {/* Back button */}
-      <button
-        onClick={onClose}
-        className="flex items-center gap-1 text-sm text-ocean mb-4 hover:underline"
-      >
-        <ArrowLeft size={16} />
-        Tillbaka
-      </button>
+      <div className="px-4 py-4">
+        <button
+          onClick={onClose}
+          className="flex items-center gap-1 text-sm text-ocean hover:underline"
+        >
+          <ArrowLeft size={16} />
+          Tillbaka
+        </button>
+      </div>
 
-      {/* Hero card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
-        {place.image && (
-          <div className="relative h-52 overflow-hidden">
-            <img
-              src={place.image}
-              alt={place.name}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-            <div className="absolute bottom-3 left-4 right-4">
-              <h2 className="text-xl font-bold text-white drop-shadow-md">{place.name}</h2>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="flex items-center gap-1">
-                  <MapPin size={12} weight="fill" color="white" />
-                  <span className="text-white/80 text-xs">{place.area}</span>
-                </div>
-                {place.timeNeeded && (
-                  <div className="flex items-center gap-1">
-                    <Clock size={12} weight="fill" color="white" />
-                    <span className="text-white/80 text-xs">{place.timeNeeded}</span>
-                  </div>
-                )}
+      {/* Hero image */}
+      {place.image && (
+        <div className="relative h-56 overflow-hidden">
+          <img
+            src={place.image}
+            alt={place.name}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+          <div className="absolute bottom-4 left-4 right-4">
+            <h2 className="text-xl font-bold text-white drop-shadow-md">{place.name}</h2>
+            <div className="flex items-center gap-3 mt-1">
+              <div className="flex items-center gap-1">
+                <MapPin size={12} weight="fill" color="white" />
+                <span className="text-white/80 text-xs">{place.area}</span>
               </div>
+              {place.timeNeeded && (
+                <div className="flex items-center gap-1">
+                  <Clock size={12} weight="fill" color="white" />
+                  <span className="text-white/80 text-xs">{place.timeNeeded}</span>
+                </div>
+              )}
             </div>
-            {place.kidFriendly && (
-              <span className="absolute top-3 right-3 text-xs bg-bamboo-light text-bamboo px-2 py-0.5 rounded-full font-medium">
-                Barnvänligt
-              </span>
-            )}
           </div>
-        )}
+          {place.kidFriendly && (
+            <span className="absolute top-3 right-3 text-xs bg-bamboo-light text-bamboo px-2 py-0.5 rounded-full font-medium">
+              Barnvänligt
+            </span>
+          )}
+        </div>
+      )}
 
-        <div className="p-5">
+      <div className="px-4">
+        {/* Description card */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 -mt-4 relative z-10 mb-3">
           {!place.image && (
             <div className="mb-3">
               <h2 className="text-xl font-bold text-ink">{place.name}</h2>
@@ -177,33 +228,33 @@ function PlaceDetail({ place, onClose }) {
             {place.longDescription || place.description}
           </p>
         </div>
+
+        {/* Transport info */}
+        {place.nearestStation && (
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-3">
+            <div className="flex items-center gap-2 mb-1">
+              <Train size={16} weight="duotone" color="#0077B6" />
+              <h4 className="text-xs font-semibold text-ink uppercase tracking-wider">Närmaste station</h4>
+            </div>
+            <p className="text-sm text-warm-gray ml-6">{place.nearestStation}</p>
+          </div>
+        )}
+
+        {/* Tips */}
+        {place.tips && place.tips.length > 0 && (
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-3">
+            <h4 className="text-xs font-semibold text-ink uppercase tracking-wider mb-3">Tips</h4>
+            <div className="space-y-2.5">
+              {place.tips.map((tip, i) => (
+                <div key={i} className="flex items-start gap-2.5">
+                  <CheckCircle size={16} weight="duotone" color="#7CB342" className="shrink-0 mt-0.5" />
+                  <p className="text-sm text-ink/70">{tip}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Transport info */}
-      {place.nearestStation && (
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-3">
-          <div className="flex items-center gap-2 mb-1">
-            <Train size={16} weight="duotone" color="#0077B6" />
-            <h4 className="text-xs font-semibold text-ink uppercase tracking-wider">Närmaste station</h4>
-          </div>
-          <p className="text-sm text-warm-gray ml-6">{place.nearestStation}</p>
-        </div>
-      )}
-
-      {/* Tips */}
-      {place.tips && place.tips.length > 0 && (
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-3">
-          <h4 className="text-xs font-semibold text-ink uppercase tracking-wider mb-3">Tips</h4>
-          <div className="space-y-2.5">
-            {place.tips.map((tip, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <CheckCircle size={16} weight="duotone" color="#7CB342" className="shrink-0 mt-0.5" />
-                <p className="text-sm text-ink/70">{tip}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
