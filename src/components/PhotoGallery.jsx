@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Camera, Images, MapPin } from '@phosphor-icons/react';
+import { Heart, Images, X } from '@phosphor-icons/react';
 
 export default function PhotoGallery({ days, photos, onSelectDay }) {
   const [viewMode, setViewMode] = useState('timeline');
+  const [fullscreenPhoto, setFullscreenPhoto] = useState(null);
 
   // Collect all photos with their day context
   const allPhotos = useMemo(() => {
@@ -38,17 +39,13 @@ export default function PhotoGallery({ days, photos, onSelectDay }) {
   }, [days, photos]);
 
   const totalPhotos = allPhotos.length;
-  const phaseColor = (phase) =>
-    phase === 'Tokyo I' ? 'sakura' : phase === 'Okinawa' ? 'ocean' : 'fuji';
-  const phaseDot = (phase) =>
-    phase === 'Tokyo I' ? 'bg-sakura' : phase === 'Okinawa' ? 'bg-ocean' : 'bg-fuji';
 
   if (totalPhotos === 0) {
     return (
       <div className="px-4 py-6">
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <Camera size={48} weight="duotone" color="#9E9E9E" />
-          <h3 className="text-lg font-semibold text-ink mt-4">Inga foton ännu</h3>
+          <Heart size={48} weight="duotone" color="#FFB7C5" />
+          <h3 className="text-lg font-semibold text-ink mt-4">Inga minnen ännu</h3>
           <p className="text-sm text-warm-gray mt-2 max-w-xs">
             Lägg till foton under varje dags anteckningar för att fylla din resejournal.
           </p>
@@ -59,10 +56,30 @@ export default function PhotoGallery({ days, photos, onSelectDay }) {
 
   return (
     <div className="px-4 py-6">
+      {/* Fullscreen photo overlay */}
+      {fullscreenPhoto !== null && (
+        <div
+          className="fullscreen-overlay"
+          onClick={() => setFullscreenPhoto(null)}
+        >
+          <button
+            onClick={() => setFullscreenPhoto(null)}
+            className="absolute top-4 right-4 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center z-10"
+          >
+            <X size={20} weight="bold" color="white" />
+          </button>
+          <img
+            src={fullscreenPhoto}
+            alt=""
+            className="max-w-full max-h-full object-contain p-4"
+          />
+        </div>
+      )}
+
       {/* Header with stats */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-sm text-warm-gray">{totalPhotos} foton</p>
+          <p className="text-sm text-warm-gray">{totalPhotos} minnen</p>
         </div>
         <div className="flex gap-1 bg-gray-100 rounded-full p-0.5">
           <button
@@ -91,10 +108,10 @@ export default function PhotoGallery({ days, photos, onSelectDay }) {
             <div key={phase}>
               {/* Phase header */}
               <div className="flex items-center gap-2 mb-3">
-                <div className={`w-3 h-3 rounded-full ${phaseDot(phase)}`} />
+                <div className="w-3 h-3 rounded-full bg-sakura" />
                 <h3 className="text-sm font-semibold text-ink">{phase}</h3>
                 <span className="text-xs text-warm-gray">
-                  {dayEntries.reduce((sum, e) => sum + e.photos.length, 0)} foton
+                  {dayEntries.reduce((sum, e) => sum + e.photos.length, 0)} minnen
                 </span>
               </div>
 
@@ -111,13 +128,17 @@ export default function PhotoGallery({ days, photos, onSelectDay }) {
                     </button>
                     <div className="grid grid-cols-3 gap-1.5">
                       {dayPhotos.map((photo, i) => (
-                        <div key={i} className="aspect-square rounded-lg overflow-hidden">
+                        <button
+                          key={i}
+                          onClick={() => setFullscreenPhoto(photo)}
+                          className="aspect-square rounded-lg overflow-hidden"
+                        >
                           <img
                             src={photo}
                             alt={`${day.title} foto ${i + 1}`}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover hover:scale-105 transition-transform"
                           />
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -132,7 +153,7 @@ export default function PhotoGallery({ days, photos, onSelectDay }) {
           {allPhotos.map((photo, i) => (
             <button
               key={i}
-              onClick={() => onSelectDay(photo.day)}
+              onClick={() => setFullscreenPhoto(photo.src)}
               className="aspect-square rounded-lg overflow-hidden relative group"
             >
               <img

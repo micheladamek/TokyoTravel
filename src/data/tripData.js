@@ -374,7 +374,7 @@ export const tripData = {
       mainActivity: "Strand & pool i Onna",
       vibe: "Sätter tonen för hela Okinawa-vistelsen",
       bookable: false,
-      heroImage: "https://images.unsplash.com/photo-1760984425552-231eff1769da?w=800&h=400&fit=crop&q=80",
+      heroImage: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=400&fit=crop&q=80",
       heroCredit: "Unsplash",
       activities: [
         { time: "Förmiddag", name: "Sov ut", detail: "", icon: "😴" },

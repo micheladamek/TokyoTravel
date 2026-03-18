@@ -2,13 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import PhosphorIcon from './PhosphorIcon';
 import { CaretDown, CaretUp, CaretRight } from '@phosphor-icons/react';
 
-const PHASE_STYLES = {
-  'Tokyo I': { dot: 'bg-sakura', color: 'sakura' },
-  'Okinawa': { dot: 'bg-ocean', color: 'ocean' },
-  'Tokyo II': { dot: 'bg-fuji', color: 'fuji' },
-};
-
-export default function Overview({ data, onSelectDay, bookingStatus, completedActivities }) {
+export default function Overview({ data, onSelectDay, completedActivities }) {
   const today = new Date();
   const startDate = new Date(data.startDate);
   const endDate = new Date(data.endDate);
@@ -67,7 +61,7 @@ export default function Overview({ data, onSelectDay, bookingStatus, completedAc
               src={src}
               alt=""
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-                i === heroIndex ? 'opacity-100' : 'opacity-0'
+                i === heroIndex ? 'opacity-100 ken-burns' : 'opacity-0'
               }`}
               loading={i === 0 ? 'eager' : 'lazy'}
             />
@@ -98,7 +92,7 @@ export default function Overview({ data, onSelectDay, bookingStatus, completedAc
               />
               {tripStarted && !tripEnded && (
                 <div
-                  className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-ocean rounded-full border-2 border-white shadow-md"
+                  className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-sakura rounded-full border-2 border-white shadow-md"
                   style={{ left: `${progressPercent}%`, marginLeft: '-7px' }}
                 />
               )}
@@ -125,7 +119,6 @@ export default function Overview({ data, onSelectDay, bookingStatus, completedAc
       {/* Day cards overlapping the hero */}
       <div className="px-4 -mt-6 relative z-10 space-y-3">
         {data.days.map(day => {
-          const style = PHASE_STYLES[day.phase];
           const activityCount = day.activities.length;
           const completedCount = completedActivities
             ? day.activities.filter((_, i) => completedActivities[`${day.date}-${i}`]).length
@@ -143,24 +136,18 @@ export default function Overview({ data, onSelectDay, bookingStatus, completedAc
                     <img src={day.heroImage} alt="" className="w-full h-full object-cover" loading="lazy" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                      <PhosphorIcon emoji={day.emoji} size={32} color={style.color} />
+                      <PhosphorIcon emoji={day.emoji} size={32} color="sakura" />
                     </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0 p-4 flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`w-2 h-2 rounded-full ${style.dot}`} />
                       <span className="text-xs text-warm-gray">{day.label} · {day.weekday} {formatDate(day.date)}</span>
                     </div>
                     <h3 className="font-semibold text-ink text-sm">{day.title}</h3>
                     <p className="text-xs text-warm-gray mt-0.5 truncate">{day.mainActivity}</p>
                     <div className="flex items-center gap-3 mt-2">
-                      {day.bookable && (
-                        bookingStatus[day.date]
-                          ? <span className="text-[10px] bg-booked-bg text-booked px-2 py-0.5 rounded-full font-medium">Bokad</span>
-                          : <span className="text-[10px] bg-unbooked-bg text-unbooked px-2 py-0.5 rounded-full font-medium">Boka</span>
-                      )}
                       {activityCount > 0 && (
                         <span className="text-[10px] text-warm-gray">
                           {completedCount}/{activityCount} klara
@@ -195,22 +182,15 @@ export default function Overview({ data, onSelectDay, bookingStatus, completedAc
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
             <div className="space-y-1">
               {data.days.map((day) => {
-                const phaseColor = day.phase === 'Tokyo I' ? 'bg-sakura' : day.phase === 'Okinawa' ? 'bg-ocean' : 'bg-fuji';
                 return (
                   <button
                     key={day.date}
                     onClick={() => onSelectDay(day)}
                     className="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
                   >
-                    <div className={`w-2 h-2 rounded-full ${phaseColor} shrink-0`} />
                     <span className="text-xs text-warm-gray w-10 shrink-0">{day.weekday.slice(0, 3)}</span>
                     <PhosphorIcon emoji={day.emoji} size={14} color="warm-gray" className="shrink-0" />
                     <span className="text-xs text-ink truncate">{day.title}</span>
-                    {day.bookable && (
-                      bookingStatus[day.date]
-                        ? <span className="text-[10px] bg-booked-bg text-booked px-1.5 py-0.5 rounded-full ml-auto shrink-0">Bokad</span>
-                        : <span className="text-[10px] bg-unbooked-bg text-unbooked px-1.5 py-0.5 rounded-full ml-auto shrink-0">Boka</span>
-                    )}
                   </button>
                 );
               })}

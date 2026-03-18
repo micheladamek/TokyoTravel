@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import PhosphorIcon, { TransportPhosphorIcon } from './PhosphorIcon';
-import { ArrowLeft, MapPin, NavigationArrow } from '@phosphor-icons/react';
+import { ArrowLeft, MapPin, NavigationArrow, Plus, X } from '@phosphor-icons/react';
 
 function mapsUrl(place) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place + ' Japan')}`;
@@ -16,10 +16,15 @@ export default function DayDetail({
   photos,
   addPhoto,
   removePhoto,
-  booked,
-  toggleBooking,
+  customActivities,
+  addCustomActivity,
+  removeCustomActivity,
 }) {
   const [activeSection, setActiveSection] = useState('activities');
+  const [fullscreenPhoto, setFullscreenPhoto] = useState(null);
+  const [showAddActivity, setShowAddActivity] = useState(false);
+  const [newActivityName, setNewActivityName] = useState('');
+  const [newActivityDetail, setNewActivityDetail] = useState('');
   const fileInputRef = useRef(null);
 
   const dayPhotos = photos[day.date] || [];
@@ -36,7 +41,17 @@ export default function DayDetail({
     e.target.value = '';
   };
 
-  const phaseColor = day.phase === 'Tokyo I' ? 'sakura' : day.phase === 'Okinawa' ? 'ocean' : 'fuji';
+  const handleAddActivity = () => {
+    if (!newActivityName.trim()) return;
+    addCustomActivity({
+      name: newActivityName.trim(),
+      detail: newActivityDetail.trim() || null,
+      icon: '📌',
+    });
+    setNewActivityName('');
+    setNewActivityDetail('');
+    setShowAddActivity(false);
+  };
 
   const sections = [
     { id: 'activities', label: 'Aktiviteter', emoji: '📋' },
@@ -47,6 +62,26 @@ export default function DayDetail({
 
   return (
     <div className="pb-6">
+      {/* Fullscreen photo overlay */}
+      {fullscreenPhoto !== null && (
+        <div
+          className="fullscreen-overlay"
+          onClick={() => setFullscreenPhoto(null)}
+        >
+          <button
+            onClick={() => setFullscreenPhoto(null)}
+            className="absolute top-4 right-4 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center z-10"
+          >
+            <X size={20} weight="bold" color="white" />
+          </button>
+          <img
+            src={fullscreenPhoto}
+            alt=""
+            className="max-w-full max-h-full object-contain p-4"
+          />
+        </div>
+      )}
+
       {day.heroImage ? (
         <>
           {/* Hero with back button on image */}
@@ -65,18 +100,6 @@ export default function DayDetail({
             >
               <ArrowLeft size={18} weight="bold" color="white" />
             </button>
-            {day.bookable && (
-              <button
-                onClick={(e) => { e.stopPropagation(); toggleBooking(); }}
-                className={`absolute top-4 right-4 text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
-                  booked
-                    ? 'bg-booked-bg text-booked'
-                    : 'bg-unbooked-bg text-unbooked'
-                }`}
-              >
-                {booked ? 'Bokad' : 'Boka'}
-              </button>
-            )}
             <div className="absolute bottom-4 left-4 right-4">
               <p className="text-white/80 text-xs">{day.label} · {day.weekday} {formatDate(day.date)}</p>
               <h2 className="text-xl font-bold text-white mt-0.5 drop-shadow-md">{day.title}</h2>
@@ -106,22 +129,10 @@ export default function DayDetail({
           <div className="px-4">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 p-5">
               <div className="flex items-start gap-3 mb-3">
-                <PhosphorIcon emoji={day.emoji} size={40} color={phaseColor} />
+                <PhosphorIcon emoji={day.emoji} size={40} color="sakura" />
                 <div>
                   <p className="text-xs text-warm-gray">{day.label} · {day.weekday} {formatDate(day.date)}</p>
                   <h2 className="text-xl font-bold text-ink mt-0.5">{day.title}</h2>
-                  {day.bookable && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleBooking(); }}
-                      className={`mt-2 text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
-                        booked
-                          ? 'bg-booked-bg text-booked'
-                          : 'bg-unbooked-bg text-unbooked'
-                      }`}
-                    >
-                      {booked ? 'Bokad' : 'Boka'}
-                    </button>
-                  )}
                 </div>
               </div>
               <p className="text-sm text-warm-gray">{day.mainActivity}</p>
@@ -140,7 +151,7 @@ export default function DayDetail({
               onClick={() => setActiveSection(s.id)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
                 activeSection === s.id
-                  ? `bg-${phaseColor} text-white`
+                  ? 'bg-sakura text-white'
                   : 'bg-white text-warm-gray border border-gray-200'
               }`}
             >
@@ -173,7 +184,7 @@ export default function DayDetail({
                       className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
                         done
                           ? 'bg-bamboo border-bamboo text-white'
-                          : 'border-gray-300 hover:border-ocean'
+                          : 'border-gray-300 hover:border-sakura'
                       }`}
                     >
                       {done && (
@@ -184,7 +195,7 @@ export default function DayDetail({
                     </button>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <PhosphorIcon emoji={activity.icon} size={18} color={done ? 'warm-gray' : phaseColor} />
+                        <PhosphorIcon emoji={activity.icon} size={18} color={done ? 'warm-gray' : 'sakura'} />
                         <span className={`font-medium text-sm ${done ? 'line-through text-warm-gray' : 'text-ink'}`}>
                           {activity.name}
                         </span>
@@ -193,13 +204,12 @@ export default function DayDetail({
                         <p className="text-xs text-warm-gray mt-0.5 ml-7">{activity.detail}</p>
                       )}
                       <div className="flex items-center gap-2 mt-0.5 ml-7">
-                        <p className="text-[10px] text-ocean">{activity.time}</p>
                         <a
                           href={mapsUrl(activity.name)}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="flex items-center gap-0.5 text-[10px] text-warm-gray hover:text-ocean transition-colors"
+                          className="flex items-center gap-0.5 text-[10px] text-warm-gray hover:text-sakura transition-colors"
                         >
                           <NavigationArrow size={10} weight="duotone" />
                           Karta
@@ -210,6 +220,80 @@ export default function DayDetail({
                 </div>
               );
             })}
+
+            {/* Custom activities */}
+            {customActivities && customActivities.map((activity, i) => (
+              <div
+                key={`custom-${i}`}
+                className="bg-white rounded-xl p-4 shadow-sm border border-sakura/20"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-sakura-light flex items-center justify-center shrink-0 mt-0.5">
+                    <PhosphorIcon emoji={activity.icon} size={12} color="sakura" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium text-sm text-ink">{activity.name}</span>
+                      <button
+                        onClick={() => removeCustomActivity(i)}
+                        className="shrink-0 w-5 h-5 flex items-center justify-center text-warm-gray hover:text-red-400 transition-colors"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                    {activity.detail && (
+                      <p className="text-xs text-warm-gray mt-0.5">{activity.detail}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Add activity form */}
+            {showAddActivity ? (
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-sakura/20">
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={newActivityName}
+                    onChange={e => setNewActivityName(e.target.value)}
+                    placeholder="Vad vill ni göra?"
+                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-sakura transition-colors"
+                    autoFocus
+                  />
+                  <input
+                    type="text"
+                    value={newActivityDetail}
+                    onChange={e => setNewActivityDetail(e.target.value)}
+                    placeholder="Detaljer (valfritt)"
+                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-sakura transition-colors"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleAddActivity}
+                      disabled={!newActivityName.trim()}
+                      className="flex-1 py-2 bg-sakura text-white text-sm font-medium rounded-lg disabled:opacity-40 transition-opacity"
+                    >
+                      Lägg till
+                    </button>
+                    <button
+                      onClick={() => { setShowAddActivity(false); setNewActivityName(''); setNewActivityDetail(''); }}
+                      className="px-4 py-2 text-sm text-warm-gray border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Avbryt
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowAddActivity(true)}
+                className="w-full py-2.5 border-2 border-dashed border-gray-200 rounded-xl text-sm text-warm-gray hover:border-sakura hover:text-sakura transition-colors flex items-center justify-center gap-2"
+              >
+                <Plus size={14} weight="bold" />
+                Lägg till aktivitet
+              </button>
+            )}
           </div>
         )}
 
@@ -221,7 +305,7 @@ export default function DayDetail({
                 <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                   <div className="flex items-center gap-2 mb-2">
                     <TransportPhosphorIcon method={t.method} size={20} />
-                    <span className="text-xs font-medium text-ocean">{t.method}</span>
+                    <span className="text-xs font-medium text-sakura">{t.method}</span>
                     {t.duration && (
                       <span className="text-xs text-warm-gray ml-auto">{t.duration}</span>
                     )}
@@ -231,7 +315,7 @@ export default function DayDetail({
                       href={mapsUrl(t.from)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-ink font-medium hover:text-ocean transition-colors underline decoration-dotted underline-offset-2"
+                      className="text-ink font-medium hover:text-sakura transition-colors underline decoration-dotted underline-offset-2"
                     >
                       {t.from}
                     </a>
@@ -242,7 +326,7 @@ export default function DayDetail({
                       href={mapsUrl(t.to)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-ink font-medium hover:text-ocean transition-colors underline decoration-dotted underline-offset-2"
+                      className="text-ink font-medium hover:text-sakura transition-colors underline decoration-dotted underline-offset-2"
                     >
                       {t.to}
                     </a>
@@ -275,13 +359,13 @@ export default function DayDetail({
                           href={mapsUrl(d.name + ' ' + d.area)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-0.5 text-[10px] text-warm-gray hover:text-ocean transition-colors shrink-0"
+                          className="flex items-center gap-0.5 text-[10px] text-warm-gray hover:text-sakura transition-colors shrink-0"
                         >
                           <NavigationArrow size={10} weight="duotone" />
                           Karta
                         </a>
                       </div>
-                      <p className="text-xs text-ocean mt-0.5">{d.cuisine} · {d.area}</p>
+                      <p className="text-xs text-sakura mt-0.5">{d.cuisine} · {d.area}</p>
                       {d.note && <p className="text-xs text-warm-gray mt-1">{d.note}</p>}
                     </div>
                     <PhosphorIcon emoji="🍽️" size={24} color="warm-gray" />
@@ -303,7 +387,7 @@ export default function DayDetail({
                 value={dayNote}
                 onChange={(e) => updateNote(day.date, e.target.value)}
                 placeholder="Skriv dina tankar, minnen, tips..."
-                className="w-full h-32 text-sm border border-gray-200 rounded-lg p-3 resize-none focus:outline-none focus:border-ocean transition-colors"
+                className="w-full h-32 text-sm border border-gray-200 rounded-lg p-3 resize-none focus:outline-none focus:border-sakura transition-colors"
               />
             </div>
 
@@ -312,7 +396,12 @@ export default function DayDetail({
               <div className="grid grid-cols-3 gap-2 mb-3">
                 {dayPhotos.map((photo, i) => (
                   <div key={i} className="relative aspect-square rounded-lg overflow-hidden group">
-                    <img src={photo} alt="" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => setFullscreenPhoto(photo)}
+                      className="w-full h-full"
+                    >
+                      <img src={photo} alt="" className="w-full h-full object-cover" />
+                    </button>
                     <button
                       onClick={() => removePhoto(day.date, i)}
                       className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
@@ -331,7 +420,7 @@ export default function DayDetail({
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full py-2 border-2 border-dashed border-gray-200 rounded-lg text-sm text-warm-gray hover:border-ocean hover:text-ocean transition-colors"
+                className="w-full py-2 border-2 border-dashed border-gray-200 rounded-lg text-sm text-warm-gray hover:border-sakura hover:text-sakura transition-colors"
               >
                 + Lägg till foto
               </button>

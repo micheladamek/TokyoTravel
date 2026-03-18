@@ -35,8 +35,8 @@ export default function Explore({ data }) {
               onClick={() => { setActiveCategory(i); setFilter('all'); }}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
                 activeCategory === i
-                  ? 'bg-ocean text-white'
-                  : 'bg-white text-warm-gray border border-gray-200 hover:border-ocean/30'
+                  ? 'bg-sakura text-white'
+                  : 'bg-white text-warm-gray border border-gray-200 hover:border-sakura/30'
               }`}
             >
               <PhosphorIcon emoji={cat.icon} size={14} color={activeCategory === i ? 'white' : 'warm-gray'} />
@@ -101,7 +101,7 @@ export default function Explore({ data }) {
             )}
             <div className="p-4">
               <p className="text-sm text-warm-gray line-clamp-2">{featured.description}</p>
-              <div className="flex items-center gap-1 mt-2 text-ocean">
+              <div className="flex items-center gap-1 mt-2 text-sakura">
                 <span className="text-xs font-medium">Läs mer</span>
                 <CaretRight size={12} weight="bold" />
               </div>
@@ -133,8 +133,8 @@ export default function Explore({ data }) {
                   <div className="min-w-0">
                     <h3 className="font-semibold text-ink text-sm">{place.name}</h3>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <MapPin size={11} weight="duotone" color="#0077B6" />
-                      <span className="text-xs text-ocean">{place.area}</span>
+                      <MapPin size={11} weight="duotone" color="#FFB7C5" />
+                      <span className="text-xs text-sakura">{place.area}</span>
                     </div>
                   </div>
                   {place.kidFriendly && (
@@ -221,8 +221,8 @@ function PlaceDetail({ place, onClose }) {
               <h2 className="text-xl font-bold text-ink">{place.name}</h2>
               <div className="flex items-center gap-3 mt-1">
                 <div className="flex items-center gap-1">
-                  <MapPin size={13} weight="duotone" color="#0077B6" />
-                  <span className="text-xs text-ocean">{place.area}</span>
+                  <MapPin size={13} weight="duotone" color="#FFB7C5" />
+                  <span className="text-xs text-sakura">{place.area}</span>
                 </div>
                 {place.timeNeeded && (
                   <div className="flex items-center gap-1">
@@ -241,7 +241,7 @@ function PlaceDetail({ place, onClose }) {
             href={mapsUrl(place.name + ' ' + place.area)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-3 text-xs text-ocean font-medium hover:underline"
+            className="inline-flex items-center gap-1.5 mt-3 text-xs text-sakura font-medium hover:underline"
           >
             <NavigationArrow size={13} weight="duotone" />
             Visa på Google Maps
@@ -252,14 +252,14 @@ function PlaceDetail({ place, onClose }) {
         {place.nearestStation && (
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-3">
             <div className="flex items-center gap-2 mb-1">
-              <Train size={16} weight="duotone" color="#0077B6" />
+              <Train size={16} weight="duotone" color="#FFB7C5" />
               <h4 className="text-xs font-semibold text-ink uppercase tracking-wider">Närmaste station</h4>
             </div>
             <a
               href={mapsUrl(place.nearestStation)}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-ocean ml-6 hover:underline flex items-center gap-1"
+              className="text-sm text-sakura ml-6 hover:underline flex items-center gap-1"
             >
               {place.nearestStation}
               <NavigationArrow size={11} weight="duotone" />
